@@ -1,8 +1,8 @@
 let Application = PIXI.Application,
   loader = PIXI.loader,
   resources = PIXI.loader.resources,
-  Sprite = PIXI.Sprite;
-TextureCache = PIXI.TextureCache,
+  Sprite = PIXI.Sprite,
+  TextureCache = PIXI.TextureCache,
   Rectangle = PIXI.Rectangle
 
 const ICON = 64;
@@ -17,36 +17,23 @@ let app = new Application({
 
 document.body.appendChild(app.view);
 
-app.renderer.backgroundColor = 0x717171;
-app.renderer.autoResize = true;
-app.renderer.view.style.position = "absolute";
-app.renderer.view.style.display = "block";
-app.renderer.autoResize = true;
-app.renderer.resize(window.innerWidth, window.innerHeight);
-
 loader
-  .add("cat", "resources/images/cat.png")
-  .add("tudo", "resources/images/tileset.png")
-  .on("progress", loadProgressHandler)
+  .add("base", "resources/images/base.json")
   .load(setup);
 
-function setup() {
-  let tileset = TextureCache["tudo"];
-  let cat = new Sprite(resources.cat.texture);
-  let alienGrabber = new Rectangle(2 * ICON, 1 * ICON, ICON, ICON);
-  tileset.frame = alienGrabber;
-  let alien = new Sprite(tileset);
-  cat.x = 100;
-  cat.y = 100;
-  cat.width = 80;
-  cat.height = 600;
-  cat.scale.set(1, 3);
-  cat.rotation = 0.5;
-  app.stage.addChild(cat);
-  app.stage.addChild(alien);
-};
+let dungeon, explorer, treasure, id;
 
-function loadProgressHandler(loader, resource) {
-  console.log("loading: " + resource.url);
-  console.log("progress: " + loader.progress + "%");
+function setup() {
+  id = resources["base"].textures;
+  dungeon = new Sprite(id["dungeon"]);
+  explorer = new Sprite(id["explorer"]);
+  treasure = new Sprite(id["treasure"]);
+  app.stage.addChild(dungeon);
+  app.stage.addChild(explorer);
+  app.stage.addChild(treasure);
+
+  treasure.x = app.stage.width - treasure.width - 48;
+  treasure.y = app.stage.height / 2 - treasure.height / 2;
+  explorer.x = 48;
+  explorer.y = app.stage.height / 2 - explorer.height / 2;
 }
