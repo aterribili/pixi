@@ -21,7 +21,56 @@ loader
   .add("base", "resources/images/base.json")
   .load(setup);
 
+  function keyboard(value) {
+    let key = {};
+    key.value = value;
+    key.isDown = false;
+    key.isUp = true;
+    key.press = undefined;
+    key.release = undefined;
+
+    key.downHandler = event => {
+      if (event.key === key.value) {
+        if (key.isUp && key.press) key.press();
+        key.isDown = true;
+        key.isUp = false;
+        event.preventDefault();
+      }
+    };
+
+    key.upHandler = event => {
+      if (event.key === key.value) {
+        if (key.isDown && key.release) key.release();
+        key.isDown = false;
+        key.isUp = true;
+        event.preventDefault();
+      }
+    };
+
+    const downListener = key.downHandler.bind(key);
+    const upListener = key.upHandler.bind(key);
+
+    window.addEventListener(
+      "keydown", downListener, false
+    );
+    window.addEventListener(
+      "keyup", upListener, false
+    );
+
+    key.unsubscribe = () => {
+      window.removeEventListener("keydown", downListener);
+      window.removeEventListener("keyup", upListener);
+    };
+
+    return key;
+  }
+
 let dungeon, explorer, treasure, door, id;
+let state;
+let left = keyboard("ArrowLeft"),
+      up = keyboard("ArrowUp"),
+      right = keyboard("ArrowRight"),
+      down = keyboard("ArrowDown");
 let blobArray = [];
 let N_BLOBS = 100;
 let MARGIN = 48;
@@ -55,11 +104,6 @@ function blobLoop(d) {
   });
 }
 
-function gameLoop(d) {
-  explorerLoop(d);
-  blobLoop(d);
-}
-
 function initializePositions() {
   treasure.x = app.stage.width - treasure.width - 48;
   treasure.y = app.stage.height / 2 - treasure.height / 2;
@@ -81,7 +125,7 @@ function initializeSprites() {
 }
 
 function initializeVelocities() {
-  explorer.vx = 1;
+  explorer.vx = 0;
   explorer.vy = 0;
 }
 
@@ -97,10 +141,65 @@ function addBlobs() {
   }
 }
 
+function setupMovements() {
+  left.press = () => {
+    explorer.vx = -5;
+    explorer.vy = 0;
+  };
+  left.release = () => {
+    if (!right.isDown) {
+      explorer.vx = 0;
+    }
+  };
+
+  right.press = () => {
+    explorer.vx = 5;
+    explorer.vy = 0;
+  };
+  right.release = () => {
+    if (!left.isDown) {
+      explorer.vx = 0;
+    }
+  };
+
+  up.press = () => {
+    explorer.vx = 0;
+    explorer.vy = -5;
+  };
+  up.release = () => {
+    if (!down.isDown) {
+      explorer.vy = 0;
+    }
+  };
+
+  down.press = () => {
+    explorer.vx = 0;
+    explorer.vy = 5;
+  };
+  down.release = () => {
+    if (!up.isDown) {
+      explorer.vy = 0;
+    }
+  };
+}
+
+function play(delta) {
+  // explorerLoop(delta);
+  explorer.x += explorer.vx;
+  explorer.y += explorer.vy;
+  blobLoop(delta);
+}
+
+function gameLoop(delta) {
+  state(delta);
+}
+
 function setup() {
   initializeSprites();
   initializePositions();
   initializeVelocities();
+  setupMovements();
   addBlobs();
+  state = play;
   app.ticker.add(d => gameLoop(d));
 }
