@@ -3,7 +3,8 @@ let Application = PIXI.Application,
   resources = PIXI.loader.resources,
   Sprite = PIXI.Sprite,
   TextureCache = PIXI.TextureCache,
-  Rectangle = PIXI.Rectangle
+  Rectangle = PIXI.Rectangle,
+  Container = PIXI.Container;
 
 const ICON = 64;
 
@@ -113,15 +114,17 @@ function initializePositions() {
 }
 
 function initializeSprites() {
+  let gameScene = new Container();
+  app.stage.addChild(gameScene);
   id = resources["base"].textures;
   dungeon = new Sprite(id["dungeon"]);
   explorer = new Sprite(id["explorer"]);
   treasure = new Sprite(id["treasure"]);
   door = new Sprite(id["door"]);
-  app.stage.addChild(dungeon);
-  app.stage.addChild(explorer);
-  app.stage.addChild(treasure);
-  app.stage.addChild(door);
+  gameScene.addChild(dungeon);
+  gameScene.addChild(explorer);
+  gameScene.addChild(treasure);
+gameScene.addChild(door);
 }
 
 function initializeVelocities() {
